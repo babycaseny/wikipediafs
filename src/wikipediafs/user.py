@@ -104,7 +104,7 @@ class User:
         token_session = re.search('(.*?);', response.getheader("Set-Cookie")).group(1)
         if self.logintoken:
             headers["Cookie"] = token_session
-            cookie_list.append(token_session)
+            #cookie_list.append(token_session)
 
         printlog(self.logger, "debug", "Headers:")
         printlog(self.logger, "debug", headers)
@@ -138,15 +138,17 @@ class User:
         printlog(self.logger, "debug", "cookie_list:")
         printlog(self.logger, "debug", cookie_list)
 
-        if len(cookie_list) == 4:
-            cookie_list.pop()
+        cookie_list = [ cookie for cookie in cookie_list if
+                        re.match(r'\w+Session=', cookie) or
+                        cookie.startswith('centralauth_') ]
+        if len(cookie_list) > 0:
             printlog(self.logger, "info",
                      "Logged in successfully with username %s" % self.username)
                 #self.logger.info("; ".join(cookie_list))
             return "; ".join(cookie_list)
         else:
             printlog(self.logger, "warning",
-                     "Could not log in with username %s: %s" % self.username)
+                     "Could not log in with username %s: %s" % (self.username, "; ".join(cookie_list)))
             return None
 
 

@@ -244,14 +244,31 @@ if __name__ == "__main__":
     import random
     import sys
     from user import User
-    
+    import logging
+    logger = logging.getLogger("mydebuglogger")
+    logger.setLevel(logging.DEBUG)
+    hdlr = logging.StreamHandler()
+    hdlr.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+
     params = {
         "host" : "www.mblondel.org",
         "basename" : "/mediawiki/index.php",
-        "https" : True
+        "https" : True,
+        "logger": logger
     }
+    title = "Test"
+    destructive = True
     
-    if len(sys.argv) == 3:
+    if True:
+        params["host"], params["basename"] = sys.argv[1], sys.argv[2]
+        user = User(sys.argv[3], sys.argv[4], **params)
+        params["cookie_str"] = user.getCookieString()
+        title = sys.argv[5]
+        destructive = False
+    elif len(sys.argv) == 3:
         # Uses username and password if passed
         user = User(sys.argv[1], sys.argv[2], **params)
         params["cookie_str"] = user.getCookieString()
@@ -263,8 +280,9 @@ if __name__ == "__main__":
         user = User(sys.argv[1], sys.argv[2], **params)
         params["cookie_str"] = user.getCookieString()                
     
-    art = Article("Test", **params)
+    art = Article(title, **params)
     print art.get()
 
-    art.set("Test ! (%s)" % str(random.random()))
+    if destructive:
+        art.set("Test ! (%s)" % str(random.random()))
     
